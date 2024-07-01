@@ -22,6 +22,10 @@ public class Nota {
     }
 
     public void setNota(double nota) {
+        String formattedNota = String.format("%.2f", nota);
+        if (!formattedNota.matches("\\d{2}\\.\\d{2}") || nota < 0.00 || nota > 10.00) {
+            throw new IllegalArgumentException("Nota deve ser entre 00.00 e 10.00 e no formato xx.xx.");
+        }
         this.nota = nota;
     }
 

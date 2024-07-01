@@ -16,6 +16,9 @@ public class Aluno {
     }
 
     public void setNome(String nome) {
+        if (nome.length() > 20) {
+            throw new IllegalArgumentException("Nome não pode ter mais que 20 caracteres.");
+        }
         this.nome = nome;
     }
 }
