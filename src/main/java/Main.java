@@ -1,8 +1,10 @@
 import java.util.Scanner;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.InputMismatchException;
 
 public class Main {
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         AlunoDAO alunoDAO = null;
@@ -12,16 +14,23 @@ public class Main {
             alunoDAO = new AlunoDAO();
             notaDAO = new NotaDAO();
 
-            int opcao;
+            int opcao = -1; // Initialize opcao with a default value
 
             do {
+                clearScreen();
                 System.out.println("### MENU ###");
                 System.out.println("1. Menu Aluno");
                 System.out.println("2. Menu Nota");
                 System.out.println("0. Sair");
                 System.out.print("Escolha uma opção: ");
-                opcao = scanner.nextInt();
-                scanner.nextLine(); // Consume the newline left by nextInt()
+                try {
+                    opcao = scanner.nextInt();
+                    scanner.nextLine(); // Consume the newline left by nextInt()
+                } catch (InputMismatchException e) {
+                    System.out.println("Opção inválida. Por favor, insira um número.");
+                    scanner.next(); // Consume the invalid input
+                    continue;
+                }
 
                 switch (opcao) {
                     case 1:
@@ -64,9 +73,10 @@ public class Main {
     }
 
     private static void menuAluno(Scanner scanner, AlunoDAO alunoDAO) throws SQLException {
-        int opcao;
+        int opcao = -1; // Initialize opcao with a default value
 
         do {
+            clearScreen();
             System.out.println("### MENU ALUNO ###");
             System.out.println("1. Inserir aluno");
             System.out.println("2. Buscar aluno por ID");
@@ -75,23 +85,29 @@ public class Main {
             System.out.println("5. Deletar aluno");
             System.out.println("0. Voltar");
             System.out.print("Escolha uma opção: ");
-            opcao = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline left by nextInt()
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline left by nextInt()
+            } catch (InputMismatchException e) {
+                System.out.println("Opção inválida. Por favor, insira um número.");
+                scanner.next(); // Consume the invalid input
+                continue;
+            }
 
             switch (opcao) {
                 case 1:
-                    System.out.print("Digite o ID do aluno: ");
-                    int idAlunoInserir = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline left by nextInt()
                     System.out.print("Digite o nome do aluno: ");
                     String nomeAlunoInserir = scanner.nextLine();
-                    Aluno novoAluno = new Aluno(idAlunoInserir, nomeAlunoInserir);
+                    if (nomeAlunoInserir.length() > 20) {
+                        System.out.println("Nome do aluno não pode ter mais que 20 caracteres.");
+                        break;
+                    }
+                    Aluno novoAluno = new Aluno(0, nomeAlunoInserir);
                     alunoDAO.criarAluno(novoAluno);
                     System.out.println("Aluno inserido com sucesso.");
                     break;
                 case 2:
-                    System.out.print("Digite o ID do aluno: ");
-                    int idAlunoBuscar = scanner.nextInt();
+                    int idAlunoBuscar = getValidIntInput(scanner, "Digite o ID do aluno: ");
                     Aluno alunoEncontrado = alunoDAO.buscarAlunoPorId(idAlunoBuscar);
                     if (alunoEncontrado != null) {
                         System.out.println("Aluno encontrado:");
@@ -108,18 +124,27 @@ public class Main {
                     }
                     break;
                 case 4:
-                    System.out.print("Digite o ID do aluno a ser atualizado: ");
-                    int idAlunoAtualizar = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline left by nextInt()
+                    int idAlunoAtualizar = getValidIntInput(scanner, "Digite o ID do aluno a ser atualizado: ");
+                    if (alunoDAO.buscarAlunoPorId(idAlunoAtualizar) == null) {
+                        System.out.println("ID do aluno não existe.");
+                        break;
+                    }
                     System.out.print("Digite o novo nome do aluno: ");
                     String novoNomeAluno = scanner.nextLine();
+                    if (novoNomeAluno.length() > 20) {
+                        System.out.println("Nome do aluno não pode ter mais que 20 caracteres.");
+                        break;
+                    }
                     Aluno alunoAtualizado = new Aluno(idAlunoAtualizar, novoNomeAluno);
                     alunoDAO.atualizarAluno(alunoAtualizado);
                     System.out.println("Aluno atualizado com sucesso.");
                     break;
                 case 5:
-                    System.out.print("Digite o ID do aluno a ser deletado: ");
-                    int idAlunoDeletar = scanner.nextInt();
+                    int idAlunoDeletar = getValidIntInput(scanner, "Digite o ID do aluno a ser deletado: ");
+                    if (alunoDAO.buscarAlunoPorId(idAlunoDeletar) == null) {
+                        System.out.println("ID do aluno não existe.");
+                        break;
+                    }
                     alunoDAO.deletarAluno(idAlunoDeletar);
                     System.out.println("Aluno deletado com sucesso.");
                     break;
@@ -135,9 +160,10 @@ public class Main {
     }
 
     private static void menuNota(Scanner scanner, NotaDAO notaDAO, AlunoDAO alunoDAO) throws SQLException {
-        int opcao;
+        int opcao = -1; // Initialize opcao with a default value
 
         do {
+            clearScreen();
             System.out.println("### MENU NOTA ###");
             System.out.println("1. Inserir nota");
             System.out.println("2. Buscar nota por ID");
@@ -146,26 +172,39 @@ public class Main {
             System.out.println("5. Deletar nota");
             System.out.println("0. Voltar");
             System.out.print("Escolha uma opção: ");
-            opcao = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline left by nextInt()
+            try {
+                opcao = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline left by nextInt()
+            } catch (InputMismatchException e) {
+                System.out.println("Opção inválida. Por favor, insira um número.");
+                scanner.next(); // Consume the invalid input
+                continue;
+            }
 
             switch (opcao) {
                 case 1:
-                    System.out.print("Digite o ID da nota: ");
-                    int idNotaInserir = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline left by nextInt()
-                    System.out.print("Digite a nota: ");
-                    double notaInserir = scanner.nextDouble();
-                    scanner.nextLine(); // Consume the newline left by nextDouble()
-                    System.out.print("Digite o ID do aluno: ");
-                    int idAlunoNota = scanner.nextInt();
-                    Nota novaNota = new Nota(idNotaInserir, notaInserir, idAlunoNota);
-                    notaDAO.criarNota(novaNota);
-                    System.out.println("Nota inserida com sucesso.");
+                    System.out.print("Digite a nota (format: xx.xx): ");
+                    String notaInserirStr = scanner.nextLine();
+                    try {
+                        double notaInserir = Double.parseDouble(notaInserirStr);
+                        if (!notaInserirStr.matches("\\d{2}\\.\\d{2}") || notaInserir < 0.00 || notaInserir > 10.00) {
+                            System.out.println("Nota deve ser entre 00.00 e 10.00 e no formato xx.xx.");
+                            break;
+                        }
+                        int idAlunoNota = getValidIntInput(scanner, "Digite o ID do aluno: ");
+                        if (alunoDAO.buscarAlunoPorId(idAlunoNota) == null) {
+                            System.out.println("ID do aluno não existe.");
+                            break;
+                        }
+                        Nota novaNota = new Nota(0, notaInserir, idAlunoNota); // ID set to 0 for auto-increment
+                        notaDAO.criarNota(novaNota);
+                        System.out.println("Nota inserida com sucesso.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Formato de nota inválido. Deve ser no formato xx.xx.");
+                    }
                     break;
                 case 2:
-                    System.out.print("Digite o ID da nota: ");
-                    int idNotaBuscar = scanner.nextInt();
+                    int idNotaBuscar = getValidIntInput(scanner, "Digite o ID da nota: ");
                     Nota notaEncontrada = notaDAO.buscarNotaPorId(idNotaBuscar);
                     if (notaEncontrada != null) {
                         System.out.println("Nota encontrada:");
@@ -182,21 +221,33 @@ public class Main {
                     }
                     break;
                 case 4:
-                    System.out.print("Digite o ID da nota a ser atualizada: ");
-                    int idNotaAtualizar = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline left by nextInt()
-                    System.out.print("Digite a nova nota: ");
-                    double notaNova = scanner.nextDouble();
-                    scanner.nextLine(); // Consume the newline left by nextDouble()
-                    System.out.print("Digite o novo ID do aluno: ");
-                    int novoIdAlunoNota = scanner.nextInt();
-                    Nota notaAtualizada = new Nota(idNotaAtualizar, notaNova, novoIdAlunoNota);
-                    notaDAO.atualizarNota(notaAtualizada);
-                    System.out.println("Nota atualizada com sucesso.");
+                    int idNotaAtualizar = getValidIntInput(scanner, "Digite o ID da nota a ser atualizada: ");
+                    if (notaDAO.buscarNotaPorId(idNotaAtualizar) == null) {
+                        System.out.println("ID da nota não existe.");
+                        break;
+                    }
+                    System.out.print("Digite a nova nota (format: xx.xx): ");
+                    String notaNovaStr = scanner.nextLine();
+                    try {
+                        double notaNova = Double.parseDouble(notaNovaStr);
+                        if (!notaNovaStr.matches("\\d{2}\\.\\d{2}") || notaNova < 0.00 || notaNova > 10.00) {
+                            System.out.println("Nota deve ser entre 00.00 e 10.00 e no formato xx.xx.");
+                            break;
+                        }
+                        int novoIdAlunoNota = getValidIntInput(scanner, "Digite o novo ID do aluno: ");
+                        Nota notaAtualizada = new Nota(idNotaAtualizar, notaNova, novoIdAlunoNota);
+                        notaDAO.atualizarNota(notaAtualizada);
+                        System.out.println("Nota atualizada com sucesso.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Formato de nota inválido. Deve ser no formato xx.xx.");
+                    }
                     break;
                 case 5:
-                    System.out.print("Digite o ID da nota a ser deletada: ");
-                    int idNotaDeletar = scanner.nextInt();
+                    int idNotaDeletar = getValidIntInput(scanner, "Digite o ID da nota a ser deletada: ");
+                    if (notaDAO.buscarNotaPorId(idNotaDeletar) == null) {
+                        System.out.println("ID da nota não existe.");
+                        break;
+                    }
                     notaDAO.deletarNota(idNotaDeletar);
                     System.out.println("Nota deletada com sucesso.");
                     break;
@@ -209,5 +260,26 @@ public class Main {
 
             System.out.println(); // Adiciona uma linha em branco para melhorar a legibilidade
         } while (opcao != 0);
+    }
+
+    private static int getValidIntInput(Scanner scanner, String prompt) {
+        int value;
+        while (true) {
+            System.out.print(prompt);
+            try {
+                value = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline left by nextInt()
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, insira um número.");
+                scanner.next(); // Consume the invalid input
+            }
+        }
+        return value;
+    }
+
+    private static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
     }
 }

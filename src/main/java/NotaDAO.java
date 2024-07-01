@@ -14,12 +14,16 @@ public class NotaDAO {
     }
 
     public void criarNota(Nota nota) throws SQLException {
-        String sql = "INSERT INTO nota (id_nota, nota, id_aluno) VALUES (?, ?, ?)";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setInt(1, nota.getIdNota());
-            stmt.setDouble(2, nota.getNota());
-            stmt.setInt(3, nota.getIdAluno());
+        String sql = "INSERT INTO nota (nota, id_aluno) VALUES (?, ?)";
+        try (PreparedStatement stmt = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setDouble(1, nota.getNota());
+            stmt.setInt(2, nota.getIdAluno());
             stmt.executeUpdate();
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    System.out.println("ID da nova nota: " + generatedKeys.getInt(1));
+                }
+            }
         }
     }
 
@@ -52,6 +56,10 @@ public class NotaDAO {
     }
 
     public void atualizarNota(Nota nota) throws SQLException {
+        if (buscarNotaPorId(nota.getIdNota()) == null) {
+            System.out.println("ID da nota não existe.");
+            return;
+        }
         String sql = "UPDATE nota SET nota = ?, id_aluno = ? WHERE id_nota = ?";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setDouble(1, nota.getNota());
@@ -62,6 +70,10 @@ public class NotaDAO {
     }
 
     public void deletarNota(int idNota) throws SQLException {
+        if (buscarNotaPorId(idNota) == null) {
+            System.out.println("ID da nota não existe.");
+            return;
+        }
         String sql = "DELETE FROM nota WHERE id_nota = ?";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setInt(1, idNota);

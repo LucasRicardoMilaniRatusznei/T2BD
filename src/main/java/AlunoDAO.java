@@ -14,11 +14,15 @@ public class AlunoDAO {
     }
 
     public void criarAluno(Aluno aluno) throws SQLException {
-        String sql = "INSERT INTO aluno (id_aluno, nome) VALUES (?, ?)";
-        try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setInt(1, aluno.getIdAluno());
-            stmt.setString(2, aluno.getNome());
+        String sql = "INSERT INTO aluno (nome) VALUES (?)";
+        try (PreparedStatement stmt = conexao.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, aluno.getNome());
             stmt.executeUpdate();
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    System.out.println("ID do novo aluno: " + generatedKeys.getInt(1));
+                }
+            }
         }
     }
 
@@ -49,6 +53,10 @@ public class AlunoDAO {
     }
 
     public void atualizarAluno(Aluno aluno) throws SQLException {
+        if (buscarAlunoPorId(aluno.getIdAluno()) == null) {
+            System.out.println("ID do aluno não existe.");
+            return;
+        }
         String sql = "UPDATE aluno SET nome = ? WHERE id_aluno = ?";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setString(1, aluno.getNome());
@@ -58,6 +66,10 @@ public class AlunoDAO {
     }
 
     public void deletarAluno(int idAluno) throws SQLException {
+        if (buscarAlunoPorId(idAluno) == null) {
+            System.out.println("ID do aluno não existe.");
+            return;
+        }
         String sql = "DELETE FROM aluno WHERE id_aluno = ?";
         try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
             stmt.setInt(1, idAluno);
